@@ -1,4 +1,4 @@
-import React, {PureComponent} from "react";
+import React, {PureComponent, useState} from "react";
 
 //Component
 import Header from "./component/Header";
@@ -8,35 +8,40 @@ import Header from "./component/Header";
 import './App.css'
 import './css/app.css'
 import TodoList from "./component/TodoList";
+import axiosClient from "./webservice/axiosClientConfiguration";
 
 
 class App extends PureComponent {
     state = {
         todoList: [{
-            id: 1,
-            text: "Task 1",
-            created: new Date().toDateString() + ", " + new Date().toLocaleTimeString(),
-            isCompleted: false,
-        }, {
-            id: 2,
-            text: "Task 2",
-            created: new Date().toDateString() + ", " + new Date().toLocaleTimeString(),
-            isCompleted: false,
-        }, {
-            id: 3,
-            text: "Task 3",
-            created: new Date().toDateString() + ", " + new Date().toLocaleTimeString(),
-            isCompleted: false,
-        }],
+            userId: 0,
+            id: 0,
+            title: '',
+            completed: false,
+        }, ],
         taskEditingId: '',
 
+    }
+
+    componentDidMount() {
+        this.getList();
+    }
+
+
+    getList=()=>{
+        fetch('https://jsonplaceholder.typicode.com/todos',
+        )
+            .then(response => response.json())
+            .then(data => this.setState({ todoList:data }));
     }
 
     addTask = (todo = {}) => {
         console.log(todo)
         this.setState(preState => ({
             todoList: [...preState.todoList, todo]
-        }))
+        }));
+        const response = axiosClient.post("/contacts", todo);
+        console.log(response);
     }
     getTaskEditingId = (id = '') => {
         this.setState({taskEditingId: id})
@@ -54,20 +59,24 @@ class App extends PureComponent {
 
     markCompleted = (id = '') => {
         this.setState(preState =>({
-            todoList:preState.todoList.map(todo => todo.id ===id ? ({...todo, isCompleted: !todo.isCompleted}): todo)
+            todoList:preState.todoList.map(todo => todo.id ===id ? ({...todo, completed: !todo.completed}): todo)
         }))
     }
 
 
 
-    onRemoveTask = (todo = {},index =-1 ) => {
-        if(index >=0) {
-            const {todoList: list} = this.state;
-            list.splice(index,1, todo);
-            this.setState({
-                todoList: list,
-            })
+    onRemoveTask = (id = '') => {
+        for (let i = 0; i < this.state.todoList.length; i++) {
+            if(id === this.state.todoList[i].id) {
+                delete this.state.todoList[i];
+                axiosClient.delete('/todos/' + id).then(function (res) {
+                    console.log("Delete successful")
+                }).catch(function (error) {
+                    console.log(error)
+                });
+            }
         }
+
     }
 
     render() {
@@ -85,7 +94,8 @@ class App extends PureComponent {
                     taskEditingId={taskEditingId}
                     onEditTask = {this.onEditTask}
                     markCompleted = {this.markCompleted}
-                    removeTask = {this.onRemoveTask}
+                    onRemoveTask = {this.onRemoveTask}
+                    getDeleteTask = {this.getDeleteTask}
                 />
             </div>
         );

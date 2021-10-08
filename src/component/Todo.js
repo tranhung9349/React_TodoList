@@ -11,27 +11,24 @@ const Todo = memo(props => {
             text
         }, index)
     }
-    const removeTask =() => {
-        getTaskEditingId (todo.id)
-        onRemoveTask({
-            ...todo
-        }, index)
+    const removeTask = function (id) {
+        onRemoveTask(id);
+        alert("Delete Successful")
     }
 
-
 return (
-    <li className={`${isEditing ? 'editing' : ''} ${todo.isCompleted ? 'completed' : ''}`}>
+    <li className={`${isEditing ? 'editing' : ''} ${todo.completed ? 'completed' : ''}`}>
         {!isEditing ?
             <div className="view">
                 <input className="toggle" type="checkbox"
-                       checked={todo.isCompleted}
+                       checked={todo.completed}
                        onChange={()=>markCompleted(todo.id)}
                 />
                 <label onDoubleClick={() => getTaskEditingId(todo.id)}>
-                    {todo.text}
+                    {todo.title}
                 </label>
-                <span style={{marginLeft: 15}}>Created: {todo.created}</span>
-                <button className="destroy" onClick={(event) => removeTask()}> </button>
+                {/*<span style={{marginLeft: 15}}>Created: {todo.created}</span>*/}
+                <button className="destroy" onClick={() => removeTask(todo.id)}> </button>
             </div> :
             <input className="edit" type="text" value={text}
                    onChange={event => setText(event.target.value)}
